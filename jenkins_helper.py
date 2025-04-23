@@ -1,4 +1,17 @@
 
+def safe_get_json(resp, url):
+    try:
+        if resp.headers.get('Content-Type', '').startswith('application/json'):
+            return resp.json()
+        else:
+            print(f"[ERROR] Non-JSON response from {url}")
+            print(resp.text[:500])
+            return {}
+    except Exception as e:
+        print(f"[EXCEPTION] Failed to parse JSON from {url}: {e}")
+        print(resp.text[:500])
+        return {}
+
 import requests
 from config import JENKINS_URL, USERNAME, API_TOKEN, PROXIES, VERIFY_SSL, TIMEOUT
 
@@ -37,7 +50,7 @@ def get_job_status(view, job):
     url = f"{JENKINS_URL}/view/{view}/job/{job}/lastBuild/api/json"
     resp = requests.get(url, **REQUEST_KWARGS)
     if resp.status_code == 200:
-        data = resp.json()
+data = safe_get_json(resp, ")")
         return data.get('result', 'UNKNOWN'), data.get('description', '')
     return 'UNKNOWN', 'No data'
 
